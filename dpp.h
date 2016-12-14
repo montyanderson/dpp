@@ -3,7 +3,25 @@
 #ifndef DPP
 #define DPP
 
-#define DPP_DELAY 500
+#define DPP_DELAY 1000
+
+struct dpp_header {
+    uint32_t size;
+    uint32_t hash;
+};
+
+uint32_t dpp_hash(char *data, uint32_t length) {
+    uint32_t i;
+    uint32_t hash = 5381;
+    int c;
+
+    for(i = 0; i < length; i++) {
+        c = data[i];
+        hash = ((hash << 5) + hash) + c;
+    }
+
+    return hash;
+}
 
 char dpp_rb(uint8_t s, uint8_t d) {
   uint8_t j;
@@ -30,8 +48,13 @@ void dpp_wb(uint8_t s, uint8_t d, char c) {
     }
 }
 
-void dpp_write(uint8_t s, uint8_t d, char *data, size_t length) {
+void dpp_write(uint8_t s, uint8_t d, char *data, uint32_t size) {
+    struct dpp_header header;
+    char *header_b = (char *) &header;
     size_t i;
+
+    header.size = size;
+    header.hash = dpp_hash(data, size);
 
     pinMode(s, OUTPUT);
     pinMode(d, INPUT_PULLUP);
@@ -47,12 +70,17 @@ void dpp_write(uint8_t s, uint8_t d, char *data, size_t length) {
 
     pinMode(d, OUTPUT);
 
-    for(i = 0; i < length; i++) {
+    for(i = 0; i < ; i++) {
+        dpp_wb(s, d, header_b[i]);
+    }
+
+    for(i = 0; i < size; i++) {
         dpp_wb(s, d, data[i]);
     }
 }
 
 void dpp_read(uint8_t s, uint8_t d) {
+    struct dpp_header header;
     size_t i;
 
     delay(1000);
@@ -70,6 +98,12 @@ void dpp_read(uint8_t s, uint8_t d) {
 
     pinMode(s, INPUT);
     pinMode(d, INPUT);
+
+    for(i = 0; i < sizeof(struct dpp_header); i++) {
+        ((char *) &header)[0] = dpp_rb(s, d);
+    }
+
+    //Serial.println(header.size);
 
     while(1) {
         Serial.print(dpp_rb(s, d));
