@@ -1,6 +1,4 @@
 #include "dpp.h"
-#define S 8
-#define D 9
 
 char str[782];
 
@@ -24,10 +22,11 @@ So much as from occasion you may glean, \
 Whether aught, to us unknown, afflicts him thus \
 That, opened, lies within our remedy.\n");
 
+  delay(100);
   dpp_write(8, 9, str, strlen(str));
 
   
-}
+} 
 
 void loop() {
 }

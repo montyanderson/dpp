@@ -33,14 +33,19 @@ void dpp_wb(uint8_t s, uint8_t d, char c) {
 void dpp_write(uint8_t s, uint8_t d, char *data, size_t length) {
     size_t i;
 
-    pinMode(s, INPUT);
-    pinMode(d, OUTPUT);
-
-    digitalWrite(d, 1);
-    while(digitalRead(s) != 1);
-    while(digitalRead(s) == 1);
-
     pinMode(s, OUTPUT);
+    pinMode(d, INPUT_PULLUP);
+
+    while(digitalRead(d) != 0);
+
+    pinMode(d, INPUT);
+
+    while(digitalRead(d) != 1);
+    digitalWrite(s, 1);
+    delayMicroseconds(DPP_DELAY);
+    digitalWrite(s, 0);
+
+    pinMode(d, OUTPUT);
 
     for(i = 0; i < length; i++) {
         dpp_wb(s, d, data[i]);
@@ -50,13 +55,18 @@ void dpp_write(uint8_t s, uint8_t d, char *data, size_t length) {
 void dpp_read(uint8_t s, uint8_t d) {
     size_t i;
 
-    pinMode(s, OUTPUT);
-    pinMode(d, INPUT);
+    delay(1000);
 
-    while(digitalRead(d) != 1);
-    digitalWrite(s, 1);
-    delayMicroseconds(DPP_DELAY);
-    digitalWrite(s, 0);
+    pinMode(s, INPUT_PULLUP);
+    pinMode(d, OUTPUT);
+
+    while(digitalRead(s) != 0);
+
+    pinMode(s, INPUT);
+
+    digitalWrite(d, 1);
+    while(digitalRead(s) != 1);
+    while(digitalRead(s) == 1);
 
     pinMode(s, INPUT);
     pinMode(d, INPUT);
